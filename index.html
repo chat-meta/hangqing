@@ -1,0 +1,247 @@
+<html><head><base href="https://websim.creation.engine/%E6%8A%8A%E6%88%90%E4%BA%A4%E9%87%91%E9%A2%9D%E4%B9%9F%E5%9C%A8%E5%9B%BE%E4%B8%8A%E8%A1%A8%E7%A4%BA%E5%87%BA%E6%9D%A5%EF%BC%8C%E6%A0%87%E9%A2%98%E9%87%8C%E9%9D%A2%E2%80%9C%E6%A8%A1%E6%8B%9F%E2%80%9D%E5%92%8C%E2%80%9C%E5%90%AB%E6%88%90%E4%BA%A4%E9%87%91%E9%A2%9D%E2%80%9D%E5%8E%BB%E6%8E%89">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据资产交易</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f0f0;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  h1 {
+    color: #333;
+    text-align: center;
+  }
+  .asset-info {
+    margin-bottom: 20px;
+  }
+  .chart-container {
+    width: 100%;
+    height: 500px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  th {
+    background-color: #f2f2f2;
+  }
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>数据资产交易</h1>
+    <div class="asset-info">
+      <h2>资产名称：智慧城市交通流量数据集</h2>
+      <p>资产描述：包含城市主要道路实时车流量、平均车速等关键指标的高价值数据集</p>
+    </div>
+    <div class="chart-container" id="priceVolumeChart"></div>
+    <table>
+      <thead>
+        <tr>
+          <th>日期</th>
+          <th>开盘价</th>
+          <th>收盘价</th>
+          <th>最高价</th>
+          <th>最低价</th>
+          <th>成交金额</th>
+        </tr>
+      </thead>
+      <tbody id="priceTable"></tbody>
+    </table>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+  <script>
+    // 生成模拟数据
+    function generateSimulatedData(days) {
+      const basePrice = 1000;
+      const data = [];
+      let currentPrice = basePrice;
+
+      for (let i = 0; i < days; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - days + i + 1);
+        const dateString = date.toISOString().split('T')[0];
+
+        const openPrice = currentPrice;
+        const closePrice = openPrice * (1 + (Math.random() - 0.5) * 0.05);
+        const highPrice = Math.max(openPrice, closePrice) * (1 + Math.random() * 0.03);
+        const lowPrice = Math.min(openPrice, closePrice) * (1 - Math.random() * 0.03);
+        const volume = Math.floor(Math.random() * 1000 + 500);
+
+        data.push({
+          date: dateString,
+          open: openPrice.toFixed(2),
+          close: closePrice.toFixed(2),
+          high: highPrice.toFixed(2),
+          low: lowPrice.toFixed(2),
+          volume: (volume * closePrice).toFixed(2)
+        });
+
+        currentPrice = closePrice;
+      }
+
+      return data;
+    }
+
+    // 渲染表格
+    function renderTable(data) {
+      const tableBody = document.getElementById('priceTable');
+      tableBody.innerHTML = '';
+      data.forEach(item => {
+        const row = `
+          <tr>
+            <td>${item.date}</td>
+            <td>${item.open}</td>
+            <td>${item.close}</td>
+            <td>${item.high}</td>
+            <td>${item.low}</td>
+            <td>${item.volume}</td>
+          </tr>
+        `;
+        tableBody.innerHTML += row;
+      });
+    }
+
+    // 渲染图表
+    function renderChart(data) {
+      const chart = echarts.init(document.getElementById('priceVolumeChart'));
+      const option = {
+        title: {
+          text: '数据资产价格和成交金额走势'
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'cross'
+          }
+        },
+        legend: {
+          data: ['K线', '成交金额']
+        },
+        grid: [
+          {
+            left: '10%',
+            right: '8%',
+            height: '50%'
+          },
+          {
+            left: '10%',
+            right: '8%',
+            top: '63%',
+            height: '16%'
+          }
+        ],
+        xAxis: [
+          {
+            type: 'category',
+            data: data.map(item => item.date),
+            scale: true,
+            boundaryGap: false,
+            axisLine: {onZero: false},
+            splitLine: {show: false},
+            min: 'dataMin',
+            max: 'dataMax'
+          },
+          {
+            type: 'category',
+            gridIndex: 1,
+            data: data.map(item => item.date),
+            scale: true,
+            boundaryGap: false,
+            axisLine: {onZero: false},
+            axisTick: {show: false},
+            splitLine: {show: false},
+            axisLabel: {show: false},
+            min: 'dataMin',
+            max: 'dataMax'
+          }
+        ],
+        yAxis: [
+          {
+            scale: true,
+            splitArea: {
+              show: true
+            }
+          },
+          {
+            scale: true,
+            gridIndex: 1,
+            splitNumber: 2,
+            axisLabel: {show: false},
+            axisLine: {show: false},
+            axisTick: {show: false},
+            splitLine: {show: false}
+          }
+        ],
+        dataZoom: [
+          {
+            type: 'inside',
+            xAxisIndex: [0, 1],
+            start: 0,
+            end: 100
+          },
+          {
+            show: true,
+            xAxisIndex: [0, 1],
+            type: 'slider',
+            top: '85%',
+            start: 0,
+            end: 100
+          }
+        ],
+        series: [
+          {
+            name: 'K线',
+            type: 'candlestick',
+            data: data.map(item => [item.open, item.close, item.low, item.high]),
+            itemStyle: {
+              color: '#00da3c',
+              color0: '#ec0000',
+              borderColor: '#00da3c',
+              borderColor0: '#ec0000'
+            }
+          },
+          {
+            name: '成交金额',
+            type: 'bar',
+            xAxisIndex: 1,
+            yAxisIndex: 1,
+            data: data.map(item => item.volume)
+          }
+        ]
+      };
+      chart.setOption(option);
+    }
+
+    // 生成数据并渲染
+    const simulatedData = generateSimulatedData(30);
+    renderTable(simulatedData);
+    renderChart(simulatedData);
+
+    // 响应式调整
+    window.addEventListener('resize', function() {
+      echarts.init(document.getElementById('priceVolumeChart')).resize();
+    });
+  </script>
+</body>
+</html>
